@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "We-Infinite",
+  "version": "1.0",
+  "description": "Access WordPress dashboards for Coherence Communication websites.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://nantes.weshore-iwp.com/v3/*",
+    "https://www.nantes.weshore-iwp.com/v3/*",
+    "https://weshore-iwp.com/v3/*",
+    "https://www.weshore-iwp.com/v3/*",
+    "https://rennes2.weshore-iwp.com/v3/*",
+    "https://www.rennes2.weshore-iwp.com/v3/*",
+    "https://bordeaux.weshore-iwp.com/v3/*",
+    "https://www.bordeaux.weshore-iwp.com/v3/*",
+    "https://mandataires.weshore-iwp.com/v3/*",
+    "https://www.mandataires.weshore-iwp.com/v3/*",
+    "https://prismo.weshore-iwp.com/v3/*",
+    "https://www.prismo.weshore-iwp.com/v3/*",
+    "https://comon.weshore-iwp.com/v3/*",
+    "https://www.comon.weshore-iwp.com/v3/*",
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
