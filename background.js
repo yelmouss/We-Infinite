@@ -8,7 +8,7 @@ const agencies = [
   "mandataires.weshore-iwp.com",
   "prismo.weshore-iwp.com",
   "comon.weshore-iwp.com",
-  "weshore-iwp.com",
+  "rennes1.weshore-iwp.com",
 ];
 
 chrome.action.onClicked.addListener(function (tab) {
