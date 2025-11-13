@@ -1,206 +1,89 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>We-Infinite</title>
-    <style>
-        body {
-            width: 300px;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .header p {
-            margin: 5px 0 0 0;
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        .info-box {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 12px;
-            margin: 15px 0;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            font-size: 12px;
-        }
-        
-        .info-icon {
-            font-size: 16px;
-            margin-top: 2px;
-        }
-        
-        .info-text {
-            flex: 1;
-            line-height: 1.4;
-        }
-        
-        .info-text strong {
-            color: #FFD700;
-            font-weight: 600;
-        }
-        
-        .button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .button:active {
-            transform: translateY(0);
-        }
-        
-        .primary-button {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        .primary-button:hover {
-            background: #45a049;
-        }
-        
-        .secondary-button {
-            background: #2196F3;
-            color: white;
-        }
-        
-        .secondary-button:hover {
-            background: #1976D2;
-        }
-        
-        .status {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            text-align: center;
-            min-height: 20px;
-        }
-        
-        .status.success {
-            background: rgba(76, 175, 80, 0.2);
-            border: 1px solid #4CAF50;
-        }
-        
-        .status.error {
-            background: rgba(244, 67, 54, 0.2);
-            border: 1px solid #f44336;
-        }
-        
-        .status.info {
-            background: rgba(33, 150, 243, 0.2);
-            border: 1px solid #2196F3;
-        }
-        
-        .status.warning {
-            background: rgba(255, 152, 0, 0.2);
-            border: 1px solid #FF9800;
-        }
-        
-        .icon {
-            width: 16px;
-            height: 16px;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 10px;
-        }
-        
-        .spinner {
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top: 2px solid white;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-    </style>
+    <link rel="stylesheet" href="popup.css" />
 </head>
-<body>
-    <div class="header">
+<body class="popup-root">
+    <header class="header">
         <h1>🚀 We-Infinite</h1>
-        <p>Accès rapide aux administrations WordPress</p>
-    </div>
-    
-    <div class="info-box">
-        <div class="info-icon">💡</div>
-        <div class="info-text">
-            <strong>Mode d'emploi :</strong><br>
-            1. Cliquez sur "Ouvrir toutes les agences"<br>
-            2. Attendez que toutes les pages soient chargées<br>
-            3. Cliquez sur "Ouvrir l'administration"
+        <p>Accès centralisé aux administrations WordPress</p>
+    </header>
+
+    <section class="stats" id="stats">
+        <div class="stat">
+            <span class="stat-label">Sites chargés</span>
+            <span class="stat-value" id="totalSites">0</span>
         </div>
-    </div>
-    
-    <div id="main-content">
+        <div class="stat">
+            <span class="stat-label">Agences chargées</span>
+            <span class="stat-value" id="loadedAgencies">0</span>
+        </div>
+    </section>
+
+    <section class="progress-container hidden" id="progressContainer">
+        <div class="progress-labels">
+            <span id="progressText">Chargement des agences…</span>
+            <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar-wrapper">
+            <div class="progress-bar" id="progressBar" style="width:0%"></div>
+        </div>
+    </section>
+
+    <section class="actions" id="main-content">
         <button id="openAllAgencies" class="button secondary-button">
             <span>📂</span>
             Ouvrir toutes les agences
         </button>
-        
+        <div class="agency-filter">
+            <select id="agencySelect" class="select">
+                <option value="">-- Sélectionner une agence --</option>
+            </select>
+            <button id="openSelectedAgency" class="button tertiary-button" disabled>
+                <span>🔎</span>
+                Charger l'agence
+            </button>
+        </div>
         <button id="openAdmin" class="button primary-button">
             <span>⚡</span>
-            Ouvrir l'administration
+            Ouvrir l'administration (onglet actif)
         </button>
-        
-        <button id="debugInfo" class="button" style="background: #9C27B0; color: white; font-size: 11px; padding: 8px;">
-            <span>🔍</span>
-            Afficher les sites (Debug)
+        <button id="showSites" class="button info-button" title="Afficher la liste des sites">
+            <span class="icon-inline" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 4H10V10H4V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14 4H20V10H14V4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 14H10V20H4V14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18 14L21 17L18 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14 17H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+            Voir les sites chargés
         </button>
-    </div>
-    
-    <div id="loading" class="loading">
+    </section>
+
+    <section id="siteListContainer" class="site-list-container hidden">
+        <div class="site-list-header">
+            <h2>Sites disponibles</h2>
+            <button id="closeSites" class="icon-button" title="Fermer">✖</button>
+        </div>
+        <ul id="siteList" class="site-list"></ul>
+    </section>
+
+    <div id="loading" class="loading hidden">
         <div class="spinner"></div>
-        <p>Chargement en cours...</p>
+        <p>Chargement…</p>
     </div>
-    
+
     <div id="status" class="status hidden"></div>
-    
+
+    <footer class="footer">
+        <small>Développée par <strong>We Maintenance</strong></small>
+    </footer>
+
     <script src="popup.js"></script>
 </body>
 </html>

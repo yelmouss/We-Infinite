@@ -26,6 +26,8 @@
     "https://www.prismo.weshore-iwp.com/v3/*",
     "https://comon.weshore-iwp.com/v3/*",
     "https://www.comon.weshore-iwp.com/v3/*",
+    "https://sitti.weshore-iwp.com/v3/*",
+    "https://www.sitti.weshore-iwp.com/v3/*",
     "<all_urls>"
   ],
   "action": {

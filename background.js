@@ -1,6 +1,4 @@
-// background.js
-
-// Liste des agences disponibles
+// Liste des agences disponibles (base)
 const agencies = [
   "nantes.weshore-iwp.com",
   "rennes2.weshore-iwp.com",
@@ -9,7 +7,31 @@ const agencies = [
   "prismo.weshore-iwp.com",
   "comon.weshore-iwp.com",
   "rennes1.weshore-iwp.com",
+  "sitti.weshore-iwp.com"
 ];
+
+function sendProgress(current, total, contextText = "Chargement en cours...") {
+  const percentage = total === 0 ? 100 : Math.min(100, (current / total) * 100);
+  chrome.runtime.sendMessage({
+    action: "progressUpdate",
+    percentage,
+    text: `${contextText}`
+  });
+}
+
+function executeContentScriptWhenComplete(tabId, agency, onComplete) {
+  chrome.tabs.onUpdated.addListener(function listener(updatedTabId, changeInfo) {
+    if (updatedTabId === tabId && changeInfo.status === "complete") {
+      chrome.tabs.onUpdated.removeListener(listener);
+      chrome.scripting.executeScript({
+        target: { tabId },
+        files: ["content.js"],
+      }, () => {
+        onComplete();
+      });
+    }
+  });
+}
 
 chrome.action.onClicked.addListener(function (tab) {
   // Rechercher les onglets correspondants pour toutes les agences
@@ -80,7 +102,9 @@ chrome.action.onClicked.addListener(function (tab) {
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   console.log("Message received:", request);
 
-  if (request.action === "openAllAgencies") {
+  if (request.action === "getAgencies") {
+    sendResponse({ success: true, agencies });
+  } else if (request.action === "openAllAgencies") {
     // Ouvrir toutes les agences
     chrome.tabs.query({}, function (tabs) {
       const processedAgencies = [];
@@ -118,28 +142,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         return;
       }
 
+      sendProgress(processedAgencies.length, agencies.length, "Agences déjà présentes");
+
       missingAgencies.forEach((agency) => {
         chrome.tabs.create({ url: `https://${agency}/v3/` }, function (newTab) {
-          // Attendre que la page soit chargée avant d'exécuter le script
-          chrome.tabs.onUpdated.addListener(function listener(
-            tabId,
-            changeInfo,
-            tab
-          ) {
-            if (tabId === newTab.id && changeInfo.status === "complete") {
-              chrome.tabs.onUpdated.removeListener(listener);
-              chrome.scripting.executeScript({
-                target: { tabId: newTab.id },
-                files: ["content.js"],
+          executeContentScriptWhenComplete(newTab.id, agency, () => {
+            openedTabs++;
+            const currentLoaded = processedAgencies.length + openedTabs;
+            sendProgress(currentLoaded, agencies.length, `Chargement ${agency}`);
+            if (openedTabs === totalMissing) {
+              sendProgress(agencies.length, agencies.length, "Toutes les agences chargées");
+              sendResponse({
+                success: true,
+                message: `${totalMissing} agences ouvertes avec succès`,
               });
-
-              openedTabs++;
-              if (openedTabs === totalMissing) {
-                sendResponse({
-                  success: true,
-                  message: `${totalMissing} agences ouvertes avec succès`,
-                });
-              }
             }
           });
         });
@@ -147,6 +163,33 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     });
 
     return true; // Indique que la réponse sera asynchrone
+  } else if (request.action === "openSelectedAgency") {
+    const agency = request.agency;
+    if (!agency) {
+      sendResponse({ success: false, message: "Aucune agence spécifiée" });
+      return false;
+    }
+    chrome.tabs.query({}, (tabs) => {
+      const existing = tabs.find((t) => t.url.includes(`${agency}/v3/`));
+      if (existing) {
+        chrome.scripting.executeScript({
+          target: { tabId: existing.id },
+          files: ["content.js"],
+        }, () => {
+          sendProgress(1, 1, `Agence ${agency} traitée`);
+          sendResponse({ success: true, message: `Agence ${agency} chargée` });
+        });
+      } else {
+        sendProgress(0, 1, `Ouverture ${agency}`);
+        chrome.tabs.create({ url: `https://${agency}/v3/` }, (newTab) => {
+          executeContentScriptWhenComplete(newTab.id, agency, () => {
+            sendProgress(1, 1, `Agence ${agency} chargée`);
+            sendResponse({ success: true, message: `Agence ${agency} chargée` });
+          });
+        });
+      }
+    });
+    return true;
   } else if (request.action === "openAdmin") {
     // Ouvrir l'administration pour le site actuel
     chrome.tabs.query(
@@ -274,6 +317,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             "Sites disponibles:",
             allSiteInformation.map((s) => s.siteName)
           );
+          chrome.runtime.sendMessage({ action: "sitesUpdated" });
         }
       );
     });
