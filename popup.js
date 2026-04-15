@@ -49,6 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const progressBar = document.getElementById("progressBar");
   const progressPercent = document.getElementById("progressPercent");
   const progressText = document.getElementById("progressText");
+  const siteProgressCount = document.getElementById("siteProgressCount");
   const siteListContainer = document.getElementById("siteListContainer");
   const siteList = document.getElementById("siteList");
   const totalSitesEl = document.getElementById("totalSites");
@@ -78,6 +79,16 @@ document.addEventListener("DOMContentLoaded", () => {
         progressContainer.classList.add("hidden");
       }, 1200);
     }
+  }
+
+  function updateSiteProgress(loaded, total) {
+    if (!siteProgressCount) {
+      return;
+    }
+    const safeLoaded = Number.isFinite(loaded) ? loaded : 0;
+    const safeTotal = Number.isFinite(total) ? total : 0;
+    siteProgressCount.textContent = `${safeLoaded}/${safeTotal} charges`;
+    progressContainer.classList.remove("hidden");
   }
 
   function toggleLoading(show) {
@@ -145,6 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
   openAllAgenciesBtn.addEventListener("click", () => {
     toggleLoading(true);
     updateProgress(0, "Initialisation...");
+    updateSiteProgress(0, 0);
     chrome.runtime.sendMessage({ action: "openAllAgencies" }, (response) => {
       toggleLoading(false);
       if (response && response.success) {
@@ -218,6 +230,8 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome.runtime.onMessage.addListener((request) => {
     if (request.action === "progressUpdate") {
       updateProgress(request.percentage, request.text);
+    } else if (request.action === "siteLoadProgress") {
+      updateSiteProgress(request.loadedSites, request.totalSites);
     } else if (request.action === "updatePopupStatus") {
       showStatus(request.message, request.type, request.autoHide);
     } else if (request.action === "sitesUpdated") {

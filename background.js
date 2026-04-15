@@ -356,5 +356,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         }
       }
     );
+  } else if (request.action === "siteLoadProgress") {
+    chrome.runtime.sendMessage({
+      action: "siteLoadProgress",
+      loadedSites: request.loadedSites,
+      totalSites: request.totalSites,
+      agency: request.agency,
+    });
+    sendResponse({ success: true });
+    return false;
   }
 });
